@@ -26,6 +26,9 @@ public class Client {
 	private String input1 = "";
 	private static final String xmlPath = "ds-system.xml";
 	private static String SERVER;
+	private static String SERVER2;
+	private static int MEM2;
+	private static int DISK2;
 
 	private int jobCpuCores, jobMemory, jobDisk, jobSub, jobID, jobTime;
 	private String serverType;
@@ -45,6 +48,7 @@ public class Client {
 			sendToServer("AUTH " + System.getProperty("user.name"));
 		}
 		readSysInfo();
+		readSysInfo2();
 
 		while (!newStatus("NONE")) {
 			if(currentStatus("OK")) {			
@@ -60,26 +64,17 @@ public class Client {
 				jobCpuCores = Integer.parseInt(jobInput[4]);
 				jobMemory = Integer.parseInt(jobInput[5]);
 				jobDisk = Integer.parseInt(jobInput[6]);
-		
-				sendToServer("GETS Capable" +" " + jobCpuCores +" "+ jobMemory +" "+ jobDisk);
-			}
-			else if(input1.startsWith("DATA")) {
-					System.out.println(input1);
-					sendToServer("OK");
-				}		
-			else if(currentStatus(".")) {
-					System.out.println(input1);
+				
+				if(jobCpuCores <= 1 && jobMemory < MEM2 && jobDisk < DISK2) {
+					sendToServer("SCHD"+ " " + jobID + SERVER2);
+				} else {
 					sendToServer("SCHD"+ " " + jobID + SERVER);
 				}
-			else if(input1.contains(SERVER)) {
-				sendToServer("OK");
+		
 			}
 				
 				 
-				}
-
-		
-		
+				}	
 		
 		closeConnection();
 	}
@@ -106,6 +101,27 @@ public class Client {
             System.out.println(i);
         }
     }
+	private void readSysInfo2() {                                                                    // Read ds-system.xml by using JAVA parsing functions.
+        try {
+            File inputFile = new File(xmlPath);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(inputFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName("server");                             // Looks for target type of server
+                                                // Stores servers as nodes inside a list
+                Node n = nList.item(1);
+                Element e = (Element) n;
+                  SERVER2 = e.getAttribute("type");
+                   MEM2 = Integer.parseInt(e.getAttribute("memory"));
+                   DISK2 = Integer.parseInt(e.getAttribute("disk"));
+                
+            
+            SERVER2 = " " + SERVER2 + " 0";                                                    //Return target server type and ID as a string object
+        } catch (Exception i) {
+            System.out.println(i);
+        }
+    }
 
 	 
 	public void jobRecieve() {
@@ -119,10 +135,9 @@ public class Client {
 		
 	}
 
-	//this function works the same as the jobInput however it is called
-	//when we get need to get the server state info instead of the job info.  
+	
 	public void serverRecieve() {
-		String[] serverInput = input1.split("\\s+");
+		String[] serverInput = input1.split("\n");
 		serverType = serverInput[0];
 		serverID = Integer.parseInt(serverInput[1]);
 		serverState = Integer.parseInt(serverInput[2]);
@@ -133,9 +148,7 @@ public class Client {
 	}
 
 
-	//close connection just closes all the input and output streams + Socket opened 
-	//in the openConneciton function. 
-	//We use the sendToServer() function to send the string QUIT to end the running process. 
+	
 	public void closeConnection() throws IOException {
 		sendToServer("QUIT");
 		input.close();
@@ -143,8 +156,7 @@ public class Client {
 		socket.close();
 	}
 
-	//open connection is very similar to the close connection function
-	//however it opens the socket and input and output streams then sends the string HELO
+	
 	public void openConnection(String address, int port) throws UnknownHostException, IOException {
 		socket = new Socket(address, port);
 		out = new PrintWriter(socket.getOutputStream());
@@ -152,19 +164,13 @@ public class Client {
 		sendToServer("HELO");
 	}
 
-	//the sent to server function utilizes PrintWriters write function to 
-	//be able to send messages to the server and then we flush the output stream
-	//so we can get ready to send another message. 
+	
 	public void sendToServer(String x) {
 		out.write(x + "\n");
 		out.flush();
 	}
 
-	//the newStatus function first initializes the input1 variable
-	//and assigns it to the value if the input stream. 
-	//this allows us to read the data that the server is sending to us
-	//after we initialize the variable we call the value of itself so that we can use
-	//it as a conditional while setting the variable at the same time.
+	
 	public boolean newStatus(String x) throws IOException {
 		input1 = input.readLine();
 		if(input1.equals(x)){
@@ -173,9 +179,6 @@ public class Client {
 		return false;
 	}
 
-	//The current status function is the same as the newStatus fucntion, 
-	//however it does not set the value of input1. it only checks to see if it is equal
-	//to the input parameter. 
 	public boolean currentStatus(String x) {
 		if(input1.equals(x)){
 			return true;
@@ -184,9 +187,7 @@ public class Client {
 	}
 
 
-	//The readFile function is used to read the value within the system.xml file
-	//we first create an empty nodelist and then use a DOM parser to get the server values from the file
-	//using the "server" tagname
+	
 	public NodeList readFile() throws SAXException, IOException, ParserConfigurationException {
 		//initialize the nodelist for the xml reader
 		NodeList systemXML = null;
