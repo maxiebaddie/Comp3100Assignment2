@@ -29,7 +29,10 @@ public class Client {
 	private static String SERVER2;
 	private static int MEM2;
 	private static int DISK2;
-
+	private static int CORE2;
+	
+	
+	// server info
 	private int jobCpuCores, jobMemory, jobDisk, jobSub, jobID, jobTime;
 	private String serverType;
 	private int serverTime, serverState, serverCpuCores, serverMemory, serverDisk;
@@ -65,7 +68,7 @@ public class Client {
 				jobMemory = Integer.parseInt(jobInput[5]);
 				jobDisk = Integer.parseInt(jobInput[6]);
 				
-				if(jobCpuCores <= 1 && jobMemory < MEM2 && jobDisk < DISK2) {
+				if(jobCpuCores == CORE2 && jobMemory < MEM2 && jobDisk < DISK2) {
 					sendToServer("SCHD"+ " " + jobID + SERVER2);
 				} else {
 					sendToServer("SCHD"+ " " + jobID + SERVER);
@@ -115,6 +118,7 @@ public class Client {
                   SERVER2 = e.getAttribute("type");
                    MEM2 = Integer.parseInt(e.getAttribute("memory"));
                    DISK2 = Integer.parseInt(e.getAttribute("disk"));
+                   CORE2 = Integer.parseInt(e.getAttribute("coreCount"));
                 
             
             SERVER2 = " " + SERVER2 + " 0";                                                    //Return target server type and ID as a string object
