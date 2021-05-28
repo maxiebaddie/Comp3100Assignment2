@@ -26,18 +26,32 @@ public class Client {
 	private String input1 = "";
 	private static final String xmlPath = "ds-system.xml";
 	private static String SERVER;
+	
 	private static String SERVER2;
 	private static int MEM2;
 	private static int DISK2;
 	private static int CORE2;
 	
+	private static String SERVER3;
+	private static int MEM3;
+	private static int DISK3;
+	private static int CORE3;
+	
+	private static String SERVER4;
+	private static int MEM4;
+	private static int DISK4;
+	private static int CORE4;
+	
+	
+	//  job info
+	private int jobCpuCores, jobMemory, jobDisk, jobSub, jobID, jobTime;
+	private int jobCount = 0;
 	
 	// server info
-	private int jobCpuCores, jobMemory, jobDisk, jobSub, jobID, jobTime;
 	private String serverType;
 	private int serverTime, serverState, serverCpuCores, serverMemory, serverDisk;
 	private int serverID;
-	private int jobCount = 0;
+	
 	private int finalServerID = 0;
 	private String finalServer = "";
 
@@ -52,6 +66,8 @@ public class Client {
 		}
 		readSysInfo();
 		readSysInfo2();
+		readSysInfo3();
+		readSysInfo4();
 
 		while (!newStatus("NONE")) {
 			if(currentStatus("OK")) {			
@@ -70,6 +86,10 @@ public class Client {
 				
 				if(jobCpuCores == CORE2 && jobMemory < MEM2 && jobDisk < DISK2) {
 					sendToServer("SCHD"+ " " + jobID + SERVER2);
+				} else if (jobCpuCores == CORE3 && jobMemory < MEM3 && jobDisk < DISK3) {
+					sendToServer("SCHD"+ " " + jobID + SERVER3);
+				} else if(jobCpuCores == CORE4 && jobMemory < MEM4 && jobDisk < DISK4) {
+					sendToServer("SCHD"+ " " + jobID + SERVER4);
 				} else {
 					sendToServer("SCHD"+ " " + jobID + SERVER);
 				}
@@ -111,9 +131,8 @@ public class Client {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(inputFile);
             doc.getDocumentElement().normalize();
-            NodeList nList = doc.getElementsByTagName("server");                             // Looks for target type of server
-                                                // Stores servers as nodes inside a list
-                Node n = nList.item(1);
+            NodeList nList = doc.getElementsByTagName("server");                                                                                                                       // Stores servers as nodes inside a list
+                Node n = nList.item(0);
                 Element e = (Element) n;
                   SERVER2 = e.getAttribute("type");
                    MEM2 = Integer.parseInt(e.getAttribute("memory"));
@@ -126,6 +145,57 @@ public class Client {
             System.out.println(i);
         }
     }
+	private void readSysInfo3() {                                                                    // Read ds-system.xml by using JAVA parsing functions.
+        try {
+            File inputFile = new File(xmlPath);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(inputFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName("server");                             
+                                           
+                Node n = nList.item(1);
+                Element e = (Element) n;
+                
+                SERVER3 = e.getAttribute("type");
+                MEM3 = Integer.parseInt(e.getAttribute("memory"));
+                DISK3 = Integer.parseInt(e.getAttribute("disk"));
+                CORE3 = Integer.parseInt(e.getAttribute("coreCount"));
+                
+                
+                
+                SERVER3 = " " + SERVER3 + " 0";
+               
+                
+            
+                                                              
+        } catch (Exception i) {
+            System.out.println(i);
+        }
+    }
+	private void readSysInfo4() {                                                                    
+        try {
+            File inputFile = new File(xmlPath);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(inputFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName("server");                                                                      
+                Node n = nList.item(nList.getLength()-2);
+                Element e = (Element) n;
+                
+                SERVER4 = e.getAttribute("type");
+                MEM4 = Integer.parseInt(e.getAttribute("memory"));
+                DISK4 = Integer.parseInt(e.getAttribute("disk"));
+                CORE4 = Integer.parseInt(e.getAttribute("coreCount"));
+             
+            SERVER4 = " " + SERVER4 + " 0";                                                    
+        } catch (Exception i) {
+            System.out.println(i);
+        }
+    }
+	
+	
 
 	 
 	public void jobRecieve() {
@@ -210,7 +280,7 @@ public class Client {
 	public static void main(String[] args) throws UnknownHostException, IOException, SAXException, ParserConfigurationException {
 
 		//default algorithm 
-		String algo = "allToLargest";
+		String algo = "myAlgorithm";
 		
 		//if there is an input parameter, set algo to the input algorithm 
 		if (args.length == 2 && args[0].equals("-a")) {
