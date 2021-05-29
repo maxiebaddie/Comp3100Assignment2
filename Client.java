@@ -1,4 +1,3 @@
-package copy;
 
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -29,7 +28,7 @@ public class Client {
 	
 	private static String SERVER2;
 	private static int MEM2;
-	private static int DISK2;
+	private static int DISK2;                         //Server Variables
 	private static int CORE2;
 	
 	private static String SERVER3;
@@ -43,11 +42,11 @@ public class Client {
 	private static int CORE4;
 	
 	
-	//  job info
+	//  Job info
 	private int jobCpuCores, jobMemory, jobDisk, jobSub, jobID, jobTime;
 	private int jobCount = 0;
 	
-	// server info
+	// Server info
 	private String serverType;
 	private int serverTime, serverState, serverCpuCores, serverMemory, serverDisk;
 	private int serverID;
@@ -59,7 +58,7 @@ public class Client {
 
 
 	public Client(String algo ,String address, int port) throws UnknownHostException, IOException, SAXException, ParserConfigurationException {
-		//start connection with server
+		//Start connection with server
 		openConnection(address,port); 
 		if(newStatus("OK")) {
 			sendToServer("AUTH " + System.getProperty("user.name"));
@@ -76,16 +75,16 @@ public class Client {
 				sendToServer("REDY");
 			} else if (input1.startsWith("JOBN")) {
 					
-				String[] jobInput = input1.split("\\s+");
-				jobSub = Integer.parseInt(jobInput[1]);
+				String[] jobInput = input1.split("\\s+");                                   //Parsing and splitting job info so 
+				jobSub = Integer.parseInt(jobInput[1]);                                     // certain inputs can be compared      
 				jobID = Integer.parseInt(jobInput[2]);
 				jobTime = Integer.parseInt(jobInput[3]);
 				jobCpuCores = Integer.parseInt(jobInput[4]);
 				jobMemory = Integer.parseInt(jobInput[5]);
 				jobDisk = Integer.parseInt(jobInput[6]);
 				
-				if(jobCpuCores == CORE2 && jobMemory < MEM2 && jobDisk < DISK2) {
-					sendToServer("SCHD"+ " " + jobID + SERVER2);
+				if(jobCpuCores == CORE2 && jobMemory < MEM2 && jobDisk < DISK2) {              //Comparing job inputs to server inputs
+					sendToServer("SCHD"+ " " + jobID + SERVER2);                               // Scheduling to correct server
 				} else if (jobCpuCores == CORE3 && jobMemory < MEM3 && jobDisk < DISK3) {
 					sendToServer("SCHD"+ " " + jobID + SERVER3);
 				} else if(jobCpuCores == CORE4 && jobMemory < MEM4 && jobDisk < DISK4) {
@@ -137,8 +136,7 @@ public class Client {
                   SERVER2 = e.getAttribute("type");
                    MEM2 = Integer.parseInt(e.getAttribute("memory"));
                    DISK2 = Integer.parseInt(e.getAttribute("disk"));
-                   CORE2 = Integer.parseInt(e.getAttribute("coreCount"));
-                
+                   CORE2 = Integer.parseInt(e.getAttribute("coreCount"));           
             
             SERVER2 = " " + SERVER2 + " 0";                                                    //Return target server type and ID as a string object
         } catch (Exception i) {
@@ -160,14 +158,9 @@ public class Client {
                 SERVER3 = e.getAttribute("type");
                 MEM3 = Integer.parseInt(e.getAttribute("memory"));
                 DISK3 = Integer.parseInt(e.getAttribute("disk"));
-                CORE3 = Integer.parseInt(e.getAttribute("coreCount"));
+                CORE3 = Integer.parseInt(e.getAttribute("coreCount"));     
                 
-                
-                
-                SERVER3 = " " + SERVER3 + " 0";
-               
-                
-            
+                SERVER3 = " " + SERVER3 + " 0";   
                                                               
         } catch (Exception i) {
             System.out.println(i);
@@ -195,21 +188,6 @@ public class Client {
         }
     }
 	
-	
-
-	 
-	public void jobRecieve() {
-		String[] jobInput = input1.split("\\s+");
-		jobSub = Integer.parseInt(jobInput[1]);
-		jobID = Integer.parseInt(jobInput[2]);
-		jobTime = Integer.parseInt(jobInput[3]);
-		jobCpuCores = Integer.parseInt(jobInput[4]);
-		jobMemory = Integer.parseInt(jobInput[5]);
-		jobDisk = Integer.parseInt(jobInput[6]);
-		
-	}
-
-	
 	public void serverRecieve() {
 		String[] serverInput = input1.split("\n");
 		serverType = serverInput[0];
@@ -223,7 +201,7 @@ public class Client {
 
 
 	
-	public void closeConnection() throws IOException {
+	public void closeConnection() throws IOException {                    //Call to close connection with server
 		sendToServer("QUIT");
 		input.close();
 		out.close();
@@ -231,7 +209,7 @@ public class Client {
 	}
 
 	
-	public void openConnection(String address, int port) throws UnknownHostException, IOException {
+	public void openConnection(String address, int port) throws UnknownHostException, IOException {      //Call to open connection with server
 		socket = new Socket(address, port);
 		out = new PrintWriter(socket.getOutputStream());
 		input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
@@ -239,13 +217,13 @@ public class Client {
 	}
 
 	
-	public void sendToServer(String x) {
+	public void sendToServer(String x) {                //Use to send messages to server
 		out.write(x + "\n");
 		out.flush();
 	}
 
 	
-	public boolean newStatus(String x) throws IOException {
+	public boolean newStatus(String x) throws IOException {      //Check the status of recieved messages and able to compare them
 		input1 = input.readLine();
 		if(input1.equals(x)){
 			return true;
@@ -253,7 +231,7 @@ public class Client {
 		return false;
 	}
 
-	public boolean currentStatus(String x) {
+	public boolean currentStatus(String x) {                   //Check the status of recieved messages but not able to compare
 		if(input1.equals(x)){
 			return true;
 		}
@@ -263,7 +241,7 @@ public class Client {
 
 	
 	public NodeList readFile() throws SAXException, IOException, ParserConfigurationException {
-		//initialize the nodelist for the xml reader
+		                                                                                               //initialize the nodelist for the xml reader
 		NodeList systemXML = null;
 
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse("ds-system.xml");
@@ -279,11 +257,11 @@ public class Client {
 
 	public static void main(String[] args) throws UnknownHostException, IOException, SAXException, ParserConfigurationException {
 
-		//default algorithm 
+		
 		String algo = "myAlgorithm";
 		
-		//if there is an input parameter, set algo to the input algorithm 
-		if (args.length == 2 && args[0].equals("-a")) {
+		
+		if (args.length == 2 && args[0].equals("-a")) {                       //Client can accept new paramenters with -a "arg"
 			algo = args[1]; 
 		}       
 
